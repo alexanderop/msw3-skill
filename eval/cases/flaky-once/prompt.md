@@ -1,0 +1,1 @@
+Create `src/mocks/flaky.ts` that exports `flakyHandlers`: MSW handlers where the first `GET https://api.example.com/todos` request responds 503, and every request after that responds 200 with an empty array.

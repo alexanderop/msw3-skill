@@ -1,0 +1,48 @@
+{
+  "flow": "msw",
+  "description": "Does the msw3 plugin make Claude Code (Haiku) write working MSW 3 code?",
+  "metrics": [
+    {
+      "id": "pass",
+      "label": "Pass",
+      "kind": "binary"
+    },
+    {
+      "id": "quality",
+      "label": "Quality",
+      "kind": "score"
+    },
+    {
+      "id": "hygiene",
+      "label": "Hygiene",
+      "kind": "binary"
+    },
+    {
+      "id": "tests",
+      "label": "Hidden tests",
+      "kind": "binary"
+    },
+    {
+      "id": "typecheck",
+      "label": "tsc clean",
+      "kind": "binary"
+    },
+    {
+      "id": "skill_used",
+      "label": "Skill used",
+      "kind": "binary"
+    }
+  ],
+  "perf_fields": [
+    "latency_s",
+    "tool_calls",
+    "turns",
+    "cost_usd"
+  ],
+  "prices": {
+    "claude-haiku-5-5": {
+      "in": 0.1,
+      "out": 0.5
+    }
+  }
+}

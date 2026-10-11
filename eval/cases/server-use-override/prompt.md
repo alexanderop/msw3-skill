@@ -1,0 +1,1 @@
+Write `src/todos.test.ts` for `listTodos` from `src/api.ts` using MSW. Cover the happy path with a shared handler, and the error path (the API responds with HTTP 500) with a per-test handler override. Make sure overrides don't leak between tests. The test must pass when run with `npx vitest run src/todos.test.ts`.

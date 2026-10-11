@@ -1,0 +1,1 @@
+Add an exported `pluralize(count: number, word: string): string` function to `src/strings.ts`. It returns `"1 todo"` for a count of 1 and `"<count> <word>s"` otherwise, for example `"0 todos"` and `"3 todos"`.

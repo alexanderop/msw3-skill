@@ -1,0 +1,12 @@
+{
+  "name": "msw3-skill",
+  "owner": { "name": "Alexander Opalic" },
+  "metadata": { "description": "Mock Service Worker v3 skill for Claude Code, with the eval that measures it." },
+  "plugins": [
+    {
+      "name": "msw3",
+      "source": "./plugin",
+      "description": "Teaches coding agents MSW 3: the APIs that changed since v2 and how to verify handlers against the installed types."
+    }
+  ]
+}

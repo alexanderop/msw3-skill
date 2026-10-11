@@ -1,0 +1,7 @@
+node_modules/
+**/traces/
+.claude/hillclimb/**/report.html
+.claude/hillclimb/**/trajectory/
+.claude/hillclimb/_oracle/
+.claude/hillclimb/msw/_oracle/
+.claude/hillclimb/msw/_null/

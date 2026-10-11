@@ -1,0 +1,1 @@
+Create `src/mocks/graphql.ts` that exports `graphqlHandlers`: MSW handlers that mock the `GetUser` query sent by `src/graphql-client.ts`. Respond with a user that has the requested `id` and the name `"Ada Lovelace"`.

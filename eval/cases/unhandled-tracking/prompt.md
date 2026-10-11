@@ -1,0 +1,1 @@
+Create `src/mocks/unhandled.ts` that exports `collectUnhandledRequests(server: SetupServer): Array<string>`. Use MSW's life-cycle events on the given server to record every HTTP request that no handler matched, as a `"METHOD URL"` string (for example `"GET https://api.example.com/nope"`). Return the array; it keeps filling as requests happen.

@@ -1,0 +1,1 @@
+{ "tags": ["trap", "fake-timers"], "agentTests": ["src/loading.test.ts"], "require": ["useFakeTimers", "delay\\("] }

@@ -1,0 +1,1 @@
+Create `src/mocks/offline.ts` that exports `offlineHandlers`: MSW handlers that make `GET https://api.example.com/todos` fail with a network error (as if the user is offline), not an HTTP error status.

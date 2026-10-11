@@ -1,0 +1,1 @@
+Add an exported `slugify(input: string): string` function to `src/strings.ts`. It lowercases the input, replaces every run of non-alphanumeric characters with a single `-`, and trims leading and trailing `-`. Example: `"  Hello, World!  "` becomes `"hello-world"`.
