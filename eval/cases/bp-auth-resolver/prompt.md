@@ -1,0 +1,1 @@
+Create `src/mocks/todos.ts` that exports `todoHandlers`: MSW handlers for `GET https://api.example.com/todos` (responds with `[]`) and `POST https://api.example.com/todos` (responds 201 with `{ id: 1, title, done: false }`). Both endpoints require the header `Authorization: Bearer test-token` and respond 401 without it.

@@ -1,7 +1,7 @@
 {
   "name": "msw3",
-  "version": "0.1.0",
-  "description": "Teaches coding agents Mock Service Worker (MSW) v3: the APIs that changed since v2 and how to verify handlers against the installed types.",
+  "version": "0.2.0",
+  "description": "Teaches coding agents Mock Service Worker (MSW) v3: the APIs that changed since v2, the official best practices, and how to verify handlers against the installed types.",
   "author": { "name": "Alexander Opalic" },
   "license": "MIT",
   "keywords": ["msw", "mock-service-worker", "testing", "vitest", "graphql", "websocket"]

@@ -2,7 +2,7 @@
 
 A Claude Code plugin that teaches coding agents [Mock Service Worker](https://mswjs.io/) v3, plus the eval that measures whether it helps.
 
-MSW 3.0 shipped on 2026-09-28, after the training cutoff of most models. Agents write MSW 2 code from memory, for example `onUnhandledRequest`, `import { graphql } from 'msw'` and `graphql.query(...)`. None of it exists in v3.
+It covers the v3 API changes and the official best practices. MSW 3.0 shipped on 2026-09-28, after the training cutoff of most models. Agents write MSW 2 code from memory, for example `onUnhandledRequest`, `import { graphql } from 'msw'` and `graphql.query(...)`. None of it exists in v3.
 
 ## Install
 
@@ -22,40 +22,61 @@ The skill is `msw3:msw` ([`plugin/skills/msw/SKILL.md`](plugin/skills/msw/SKILL.
 
 ## Results
 
-Claude Code with Haiku 5.5, 16 tasks × 3 runs per arm. The only difference between the arms is `--plugin-dir plugin`.
+Claude Code with Haiku 5.5, 23 tasks × 3 runs per arm (69 runs). The arms differ only in `--plugin-dir`:
 
-| | Without plugin | With plugin |
-|---|---|---|
-| **Pass**: hidden tests pass and `tsc --noEmit` is clean | 96% | **100%** |
-| **Quality** (blind Opus judge, rubric below) | 95% | **100%** |
-| Agent cost, all 48 runs | $0.302 | **$0.235 (−22%)** |
-| Mean time per run | 19 s | **14 s** |
-| Skill triggered on MSW tasks | – | 100% (39/39) |
-| Skill triggered on non-MSW tasks | – | 0% (0/9) |
+- **Baseline:** no plugin
+- **v1:** the skill with v3 API changes only
+- **v2:** v1 plus the [official MSW best practices](https://mswjs.io/docs/guides/best-practices) (current version)
 
-By task group:
+| | Baseline | v1 | **v2** |
+|---|---|---|---|
+| **Pass**: hidden tests pass and `tsc --noEmit` is clean | 93% | 100% | **100%** |
+| **Quality** (blind Opus judge, rubric below) | 89% | 95% | **99%** |
+| Judge's `best_practices` criterion | 65% (32/49) | 65% (33/51) | **94% (48/51)** |
+| Agent cost, all 69 runs | $0.461 | $0.359 | **$0.416** |
+| Mean time per run | 21 s | 16 s | **22 s** |
+| Skill triggered on MSW tasks | – | 100% | **100%** (60/60) |
+| Skill triggered on non-MSW tasks | – | 0% | **0%** (0/9) |
 
-| Group | Runs | Pass (without → with) | Quality (without → with) | Cost (without → with) |
-|---|---|---|---|---|
-| v3 traps (GraphQL, `onUnhandledFrame`, `websocket:connection`, fake timers) | 18 | 100% → 100% | 95% → 100% | $0.148 → $0.101 |
-| Control MSW tasks (REST, cookies, `once`, network errors, `server.use`) | 21 | 90% → 100% | 93% → 100% | $0.132 → $0.112 |
-| Non-MSW tasks | 9 | 100% → 100% | 100% → 100% | $0.022 → $0.022 |
+By task group (quality, baseline → v1 → v2):
 
-### What the plugin fixed
+| Group | Runs per arm | Pass | Quality |
+|---|---|---|---|
+| v3 traps (GraphQL, `onUnhandledFrame`, `websocket:connection`, fake timers) | 18 | 100 → 100 → 100% | 95 → 100 → 100% |
+| Control MSW tasks (REST, cookies, `once`, network errors, `server.use`) | 21 | 90 → 100 → 100% | 91 → 97 → 100% |
+| Best-practice tasks (see below) | 21 | 86 → 100 → 100% | 77 → 85 → **97%** |
+| Non-MSW tasks | 9 | 100 → 100 → 100% | 100 → 100 → 100% |
 
-Without the plugin, Haiku reads `node_modules/msw` types and fixes its mistakes with `tsc`. So it passes the v3 traps that a task asks about directly. It slips on v2 habits that it adds unprompted:
+### What the v3 rules fixed (v1)
 
-- `server.listen({ onUnhandledRequest: 'error' })` in test setup. That option does not exist in v3, and Vitest doesn't typecheck, so the agent's own test run passed. This caused both pass failures.
+Without the plugin, Haiku reads `node_modules/msw` types and fixes its mistakes with `tsc`, so it passes the v3 traps that a task asks about directly. It slips on v2 habits that it adds unprompted:
+
+- `server.listen({ onUnhandledRequest: 'error' })` in test setup. That option does not exist in v3, and Vitest doesn't typecheck, so the agent's own test run passed. This caused every baseline pass failure.
 - Parsing `request.headers.get('cookie')` by hand instead of using the `cookies` resolver argument.
 - A module-level counter instead of `{ once: true }` for a one-time error response.
 - Hand-rolled GraphQL matching on `http.post` instead of `graphql.link(url).mutation(...)`.
-- Untyped `graphql` handlers where `variables` end up as `any`.
 
-With the plugin, none of these showed up, and runs used about 20% fewer tool calls.
+### What the best practices fixed (v2)
+
+The best-practice prompts never name the practice; they describe a normal task. Quality per task, baseline → v1 → v2:
+
+| Task | What the docs recommend | Quality |
+|---|---|---|
+| Test that `createTodo` sends the title | Validate the body in the handler and assert on the result, not on the request | 0.50 → 0.78 → **1.00** |
+| Mock the whole API | Group handlers by domain and compose them | 0.57 → 0.80 → **1.00** |
+| Success and error tests | Happy path in shared handlers, error via `server.use()` | 0.83 → 0.83 → **1.00** |
+| Two endpoints that need auth | Higher-order resolver (`withAuth`) instead of copying the check | 0.80 → 0.87 → **1.00** |
+| Typed comment endpoint | `http.post<Params, Body, Response>` instead of casts | 0.93 → 0.87 → **1.00** |
+| Browser setup | `npx msw init public --save`, commit the worker | 0.93 → 1.00 → 1.00 |
+| Demo scenarios via `?scenario=` | Prepend scenario overrides to the base handlers | 0.80 → 0.80 → 0.80 |
+
+Known gap: in the scenario task, all three arms return each scenario's handlers on their own instead of putting them in front of the shared base handlers.
+
+v2 costs more than v1 ($0.416 vs $0.359), because the agent does more work on the best-practice tasks. It still costs less than no plugin ($0.461).
 
 ### How much to trust it
 
-48 runs per arm give a noise floor of about ±13 points on a pass rate. So the pass and quality gains point the right way but are not proof. The cost and time gains held across task groups. This setup is also easy on the baseline: MSW 3 is installed, so the agent can read its types. A project without MSW installed, or a larger codebase, should show a bigger gap. That set doesn't exist yet.
+69 runs per arm give a noise floor of about ±12 points on a rate. The jump on `best_practices` (65% → 94%) is well above that. The pass-rate and v3-quality gains point the right way but are not proof on their own. This setup is also easy on the baseline: MSW 3 is installed, so the agent can read its types. A project without MSW installed should show a bigger gap. That set doesn't exist yet.
 
 ## How the eval works
 
@@ -76,6 +97,7 @@ Each case in [`eval/cases/<id>/`](eval/cases) has:
   - `idiomatic`: MSW helpers instead of hand-rolled equivalents
   - `test_hygiene`: listen / resetHandlers / close, and failing on unhandled requests
   - `type_safety`: typed bodies and variables, no `any`
+  - `best_practices`: follows the official MSW best practices that apply to the task
   - `minimal_scope`: only the files the task needs
 
 ### Grader checks, run before any agent
@@ -84,12 +106,15 @@ Each case in [`eval/cases/<id>/`](eval/cases) has:
 |---|---|---|
 | Reference solutions through the runner and grader | 100% pass | 100% |
 | Empty workspace (agent did nothing) | 0% pass | 0% |
-| Judge on the reference solutions | ~100% quality | 99% |
+| Judge on the reference solutions | ~100% quality | 98% |
 | Judge on a deliberately sloppy v2-style solution | ~0% quality | 0% |
+| Judge on a test that spies on the request body | `best_practices` = 0 | 0 |
 
-The reference solutions also caught a v3 change that the release notes don't spell out: `graphql` no longer has `query` / `mutation` at the top level. Every operation goes through `graphql.link(url)`.
+The reference solutions also caught two v3 behaviors that the release notes don't spell out:
+- `graphql` no longer has `query` / `mutation` at the top level. Every operation goes through `graphql.link(url)`.
+- Calling `server.close()` twice throws "already disabled".
 
-Raw per-run results, including the judge's reasons: [`.claude/hillclimb/msw/baseline/results.jsonl`](.claude/hillclimb/msw/baseline/results.jsonl) and [`.claude/hillclimb/msw/v1/results.jsonl`](.claude/hillclimb/msw/v1/results.jsonl).
+Raw per-run results, including the judge's reasons: [`.claude/hillclimb/msw/baseline/results.jsonl`](.claude/hillclimb/msw/baseline/results.jsonl) and [`.claude/hillclimb/msw/v1/results.jsonl`](.claude/hillclimb/msw/v1/results.jsonl) and [`.claude/hillclimb/msw/v2/results.jsonl`](.claude/hillclimb/msw/v2/results.jsonl).
 
 ### Run it yourself
 
@@ -98,12 +123,12 @@ cd eval/fixture && pnpm install && cd ../..
 node eval/run.mjs --mode oracle                         # grader check: expect 100%
 node eval/run.mjs --mode null                           # grader check: expect 0%
 node eval/run.mjs --variant baseline                    # without the plugin
-node eval/run.mjs --variant v1 --plugin-dir plugin      # with the plugin
+node eval/run.mjs --variant v2 --plugin-dir plugin      # with the plugin
 node eval/judge.mjs --variant baseline
-node eval/judge.mjs --variant v1
+node eval/judge.mjs --variant v2
 ```
 
-Flags: `--reps`, `--cases a,b`, `--concurrency`, `--model` (default `haiku`). The full run above cost $0.54 for the agent runs and about $2.20 for judging.
+Flags: `--reps`, `--cases a,b`, `--concurrency`, `--model` (default `haiku`). One arm costs about $0.45 in agent runs and $2.30 in Opus judging.
 
 ## License
 

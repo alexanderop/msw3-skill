@@ -10,3 +10,14 @@ Verified against the msw `v3.0.3` source. Use these to decide whether code is va
 - The `cookies` resolver argument holds parsed request cookies.
 - `server.use()` prepends runtime handlers; `server.resetHandlers()` removes them; `{ once: true }` makes a handler respond once.
 - `HttpResponse.json()`, `HttpResponse.text()`, `HttpResponse.error()` (network error) and `new HttpResponse(body, init)` are the response helpers.
+
+## Official best practices (mswjs.io/docs/guides/best-practices)
+
+- Happy paths live in shared handlers (`handlers.ts`); error and edge states are added per test with `server.use()` and removed with `server.resetHandlers()`. Don't encode error states in the shared handlers.
+- Large APIs: group handlers by domain in separate modules and compose them into one `handlers` array.
+- Avoid request assertions in tests (checking that a request was made, its URL/body, or that a handler was called). Instead, validate the request inside the handler (return an error response such as 400 when it's invalid) and assert on how the application reacts. Life-cycle events are reserved for one-way requests with no observable effect (analytics, monitoring).
+- Use the generic arguments for type safety: `http.post<Params, RequestBody, ResponseBody>()` and `api.query<Query, Variables>()`.
+- Abstract logic repeated across handlers into higher-order response resolvers (e.g. `withAuth(resolver)`) or utility functions.
+- Switchable dev scenarios: a map of scenario name → override handlers, prepended before the base handlers (left-most wins).
+- Browser: generate the worker with `npx msw init <public-dir> --save` (records `msw.workerDirectory` in package.json so upgrades regenerate it) and commit `mockServiceWorker.js`.
+- Tests: `onUnhandledFrame: 'error'` in the test setup so unknown requests fail.

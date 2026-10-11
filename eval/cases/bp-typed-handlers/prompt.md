@@ -1,0 +1,1 @@
+Create `src/mocks/comments.ts` that exports `commentHandlers`: an MSW handler for `POST https://api.example.com/posts/:postId/comments`. The request body is JSON `{ author: string; text: string }`. Respond 201 with `{ id: "c1", postId, author, text }`.

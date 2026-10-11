@@ -1,0 +1,1 @@
+Add MSW mocks for the todos API (`GET` and `POST https://api.example.com/todos`) under `src/mocks/`, and write `src/todos-status.test.ts` that checks `loadWithStatus` from `src/api.ts` ends with `'done'` when the request succeeds and with `'error'` when the server fails. The test must pass when run with `npx vitest run src/todos-status.test.ts`.

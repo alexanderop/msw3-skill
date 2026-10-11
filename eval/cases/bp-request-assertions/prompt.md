@@ -1,0 +1,1 @@
+Write `src/create-todo.test.ts` that tests `createTodo` from `src/api.ts` using MSW. Make sure the test would catch a bug where `createTodo` stops sending the title to the API. The test must pass when run with `npx vitest run src/create-todo.test.ts`.

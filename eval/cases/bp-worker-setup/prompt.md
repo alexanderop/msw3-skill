@@ -1,0 +1,1 @@
+This app will also run in the browser; its static files are served from `public/`. Set up MSW for the browser: create `src/mocks/handlers.ts` exporting `handlers` (one handler, `GET https://api.example.com/todos` → `[]`) and `src/mocks/browser.ts` exporting `worker`. Make sure the setup keeps working for teammates and after MSW upgrades.
